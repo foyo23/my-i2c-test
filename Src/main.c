@@ -122,7 +122,7 @@ void delay_ms( short time )
 //}
 
 #define ADDR_24LCxx_Write 0xA0
-#define ADDR_24LCxx_Read 0xA1
+#define ADDR_24LCxx_Read ( 0x3A << 1 ) | 0x01U //0xA1
 #define BufferSize 0x100
 uint8_t WriteBuffer[BufferSize],ReadBuffer[BufferSize];
 uint16_t i;
@@ -186,7 +186,17 @@ int main(void)
   // }
   
   /* read date from EEPROM */
-  HAL_I2C_Mem_Read(&hi2c1, ADDR_24LCxx_Read, 0, I2C_MEMADD_SIZE_8BIT, ReadBuffer, BufferSize, 0x20);
+  int ret = 0;
+  //ret = HAL_I2C_Mem_Read(&hi2c1, ADDR_24LCxx_Read, 0, I2C_MEMADD_SIZE_8BIT, ReadBuffer, BufferSize, 0x20);
+  uint16_t i2c_addr = ADDR_24LCxx_Read;
+  USART1_printf( "i2c_addr: 0x%x\r\n", i2c_addr );
+  ret = HAL_I2C_Mem_Read(&hi2c1, i2c_addr, 0x0, I2C_MEMADD_SIZE_8BIT, ReadBuffer, 1, 0x20);
+  if( 0 != ret ) {
+    USART1_printf( "read error!\r\n" );
+  } else {
+    USART1_printf( "read success.\r\n" );
+  }
+
   for (i = 0; i < 256; i++)
     USART1_printf("0x%02X  ", ReadBuffer[i]);
 
